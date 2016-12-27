@@ -12,12 +12,14 @@ public class RozetkaSearchingParser
 	public Thread parserThread;
 	HtmlDocument fullDocument;
 	public List<string> resuls;
+	public bool hasError;
 
 	public RozetkaSearchingParser(string searchedHtml)
 	{
 		parseThreadTrigger = new ManualResetEvent(false);
 		fullDocument = CreateSearchingHtmlDoc(searchedHtml);
 		OnParseThreadStart += ParseThreadStart;
+		hasError = false;
 
 
 		parserThread = new Thread(new ThreadStart(OnParseThreadStart));
@@ -48,7 +50,15 @@ public class RozetkaSearchingParser
 		var listOfValues = new List<string>();
 		for (int i = 1; i < 11; i++)
 		{
+			
 			var node = doc.DocumentNode.SelectSingleNode("//*[@id=\"block_with_search\"]/div/script[" + i + "]");
+			if (node == null)
+			{
+				Debug.Log("query incorrect");
+				hasError = true;
+				break;
+				//continue;
+			}
 			var value = node.InnerText;
 			listOfValues.Add(value);
 			Debug.Log(value);

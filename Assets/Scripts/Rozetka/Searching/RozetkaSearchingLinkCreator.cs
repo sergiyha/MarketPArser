@@ -18,11 +18,4 @@ public class RozetkaSearchingLinkCreator
 		string htmlCorrectInput = searchingInput.Replace(" ", "+");
 		htmlQuery = searchLink + htmlCorrectInput;
 	}
-
-
-
-
-
-
-
 }

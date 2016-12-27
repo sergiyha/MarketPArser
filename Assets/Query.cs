@@ -11,12 +11,14 @@ using System.Threading;
 
 public class Query : MonoBehaviour
 {
+	public InputField inputField;
+	public Button searchButton;
 
-	//private string url = "http://rozetka.com.ua/12203892/p12203892/";
-	private const string searchLink = "http://rozetka.com.ua/search/?section_id=&section=&text=samsung+1++++2";
+	public event Action NotFound;
+	public event Action OnNothingToFind;
+	public event Action OnSearch;
+
 	private const string itemUrl = "http://hard.rozetka.com.ua/****/p****/";
-	private const string itemSearchMarker = "{name: 'eventPosition', value: '_valueToChange_'}";//заменять '_valueToChange_'
-																								//private string[] itemsSubStrings = new string[6];
 
 	private string CreateItemLink(string itemId)
 	{
@@ -24,36 +26,105 @@ public class Query : MonoBehaviour
 		return link.Replace("****", itemId);
 	}
 
-	InputField inputField;
 
 	void Start()
 	{
-		Search();
+		searchButton.onClick.AddListener(Search);
 	}
+
 
 	public void Search()
 	{
-		StartCoroutine(wait());
+		if (!string.IsNullOrEmpty(inputField.text))
+		{
+			ExecuteEvent(OnSearch);
+		}
+		else
+		{
+			ExecuteEvent(OnNothingToFind);
+		}
 	}
 
-	IEnumerator wait()
+
+	/// <summary>
+	/// For StartSearch
+	/// </summary>
+	/// 
+	private void DebugOnStart()
 	{
-		yield return new WaitForSeconds(3);
-		StartCoroutine(StartSearchRequest("samsung 1 2"));
+		Debug.Log("start searching");
 	}
 
+
+	private void StartSearchingRequest()
+	{
+		StartCoroutine(StartSearchRequest(inputField.text));
+	}
 
 
 	IEnumerator StartSearchRequest(string input)
 	{
-
 		WWW req = new WWW(new RozetkaSearchingLinkCreator(input).htmlQuery);
 		yield return req;
 		if (req.error == null)
 		{
-			var r = new RozetkaSearchingParser(System.Text.Encoding.UTF8.GetString(req.bytes));
+			string html = System.Text.Encoding.UTF8.GetString(req.bytes);
+			var r = new RozetkaSearchingParser(html);
 			r.parseThreadTrigger.WaitOne();
-			Debug.Log(r.resuls.Count);
+
+			if (r.hasError)
+			{
+				ExecuteEvent(OnNothingToFind);
+			}
+			else
+			{
+
+				RozetkaItemCreator items = new RozetkaItemCreator(r.resuls);
+			
+			}
 		}
 	}
+
+
+	/// <summary>
+	/// On Nothing ToFind
+	/// </summary>
+	private void DebugNothingToFind()
+	{
+		Debug.Log("nothing to find");
+	}
+
+
+	/// <summary>
+	/// ON NOTFOUND
+	/// </summary>
+	private void DebugOnError()
+	{
+		Debug.Log("query incorrect, NOT FOUND");
+	}
+
+
+	/// <summary>
+	/// Additional functions
+	/// </summary>
+	private bool CheckActionIfExist(Action handler)
+	{
+		if (handler != null)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+
+	private void ExecuteEvent(Action action)
+	{
+		CheckActionIfExist(action);
+		action();
+	}
+
+
 }
