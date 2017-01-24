@@ -14,7 +14,7 @@ public class Query : MonoBehaviour
 	public InputField inputField;
 	public Button searchButton;
 
-	public event Action NotFound;
+	public event Action OnNotFound;
 	public event Action OnNothingToFind;
 	public event Action OnSearch;
 
@@ -30,6 +30,16 @@ public class Query : MonoBehaviour
 	void Start()
 	{
 		searchButton.onClick.AddListener(Search);
+
+		OnNotFound += DebugOnNotFound;
+
+		OnNothingToFind += DebugNothingToFind;
+
+		OnSearch += DebugOnStart;
+		OnSearch += StartSearchingRequest;
+
+
+
 	}
 
 
@@ -74,13 +84,11 @@ public class Query : MonoBehaviour
 
 			if (r.hasError)
 			{
-				ExecuteEvent(OnNothingToFind);
+				ExecuteEvent(OnNotFound);
 			}
 			else
 			{
-
-				RozetkaItemCreator items = new RozetkaItemCreator(r.resuls);
-			
+				RozetkaItemDataManager.Instance.CreateItems(r.resuls, html);
 			}
 		}
 	}
@@ -98,7 +106,7 @@ public class Query : MonoBehaviour
 	/// <summary>
 	/// ON NOTFOUND
 	/// </summary>
-	private void DebugOnError()
+	private void DebugOnNotFound()
 	{
 		Debug.Log("query incorrect, NOT FOUND");
 	}

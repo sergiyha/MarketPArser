@@ -30,7 +30,6 @@ public class RozetkaSearchingParser
 	private void ParseThreadStart()
 	{
 		resuls = CreateListOfSearchedItems(fullDocument);
-		Debug.Log(resuls.Count);
 		parseThreadTrigger.Set();
 		parserThread.Abort();
 	}
@@ -48,10 +47,10 @@ public class RozetkaSearchingParser
 	private List<string> CreateListOfSearchedItems(HtmlDocument doc)
 	{
 		var listOfValues = new List<string>();
-		for (int i = 1; i < 11; i++)
+		for (int i = 2; i < 12; i++)
 		{
-			
-			var node = doc.DocumentNode.SelectSingleNode("//*[@id=\"block_with_search\"]/div/script[" + i + "]");
+
+			var node = doc.DocumentNode.SelectSingleNode(" //*[@id=\"block_with_search\"]/div/div[" + i + "]/div/div/div/input");
 			if (node == null)
 			{
 				Debug.Log("query incorrect");
@@ -59,7 +58,7 @@ public class RozetkaSearchingParser
 				break;
 				//continue;
 			}
-			var value = node.InnerText;
+			var value = node.Attributes["name"].Value;
 			listOfValues.Add(value);
 			Debug.Log(value);
 		}
